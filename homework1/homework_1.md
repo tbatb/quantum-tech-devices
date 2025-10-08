@@ -2,7 +2,7 @@
 
 ## Notebook Structure Overview
 SciPy Docs: https://docs.scipy.org/doc/scipy/reference/
-## Cell 1: imports - breakdown
+## Cell: imports - breakdown
 - `import numpy as np`: Array operations, np.array converts lists to arrays.
 - `scipy constant as const`: undefined numbers where truncation errors appear are brought into float form
 - `scipy.sparse import diags`: physical and math units i.e pi, golden_ration etc
@@ -10,7 +10,7 @@ SciPy Docs: https://docs.scipy.org/doc/scipy/reference/
 
 ---
 
-## Cell 2: Markdown - Helper Functions Description
+## Cell(s) Task1: Markdown - Helper Functions Description
 - **Type**: Markdown.
 - **Content**:
   - Describes the `build_potential` function (detailed below).
@@ -20,152 +20,103 @@ SciPy Docs: https://docs.scipy.org/doc/scipy/reference/
   - Tip: Suggests plotting a random structure for understanding.
 - **Purpose**: Explains the upcoming code cell. References no external docs directly, but implies usage with NumPy arrays (see NumPy docs for `np.array`).
 
----
+Here is a detailed documentation for the code and concepts used in Task 1.
 
-## Cell 3: Code - Imports and `build_potential` Function
-- **Type**: Code (Python).
-- **Execution Count**: `null` (not executed in the notebook).
-- **Source Code**:
-  ```python:disable-run
-  import numpy as np
-  import matplotlib.pyplot as plt
-  import scipy.constants as const
+## Code Documentation for Task 1
 
-  def build_potential(layers, dz_nm=0.05):
-      """
-      Build heterostructure potential from layers.
-      layers: list of (thickness [nm], band edge [eV])
-      dz_nm: grid spacing [nm]
-      returns: z [m], V [J]
-      """
-      z = []
-      V = []
-      pos = 0.0
-      for thickness_nm, band_edge_eV in layers:
-          n_points = int(thickness_nm/dz_nm)
-          for _ in range(n_points):
-              z.append(pos * 1e-9)
-              V.append(band_edge_eV * const.eV)
-              pos += dz_nm
-      return np.array(z), np.array(V)
-  ```
-
-### Breakdown
-- **Imports**:
-  - `import numpy as np`: Aliases NumPy for array operations. `np.array` converts lists to arrays (NumPy docs: [numpy.org/doc/stable/reference/generated/numpy.array.html](https://numpy.org/doc/stable/reference/generated/numpy.array.html)).
-  - `import matplotlib.pyplot as plt`: Imports plotting submodule (not used here, but for later visualization; Matplotlib docs: [matplotlib.org/stable/api/pyplot_api.html](https://matplotlib.org/stable/api/pyplot_api.html)).
-  - `import scipy.constants as const`: Aliases SciPy constants. `const.eV` is electronvolt in Joules (1.60217662e-19 J); `const.hbar` (Planck's constant / 2π) and `const.m_e` (electron mass) are used later (SciPy docs: [docs.scipy.org/doc/scipy/reference/constants.html#scipy.constants.physical_constants](https://docs.scipy.org/doc/scipy/reference/constants.html#scipy.constants.physical_constants)).
-
-- **Function: `build_potential(layers, dz_nm=0.05)`**:
-  - **Docstring**: Explains purpose, parameters, and returns. Units: input nm/eV, output m/J.
-  - **Parameters**:
-    - `layers`: List of tuples, e.g., `[(5.0, 1.0)]` (thickness in nm, band edge in eV). Represents layered structure (e.g., barriers/wells).
-    - `dz_nm=0.05`: Default grid spacing in nm (scalar float).
-  - **Local Variables**:
-    - `z = []`: Empty list to store position grid (will become NumPy array in meters).
-    - `V = []`: Empty list to store potential values (will become NumPy array in Joules).
-    - `pos = 0.0`: Starting position (float, in nm; accumulates along z-direction).
-    - `thickness_nm, band_edge_eV`: Unpacked from each tuple in `layers` loop (floats).
-    - `n_points = int(thickness_nm/dz_nm)`: Integer number of grid points per layer (truncates via `int`; potential loss of precision for non-integer divisions).
-    - `_`: Loop variable (unused, Python convention for dummy iterators).
-  - **Logic**:
-    - Outer loop: Iterates over each layer.
-    - Inner loop: For each grid point in the layer, appends `pos * 1e-9` (nm to m conversion) to `z`, `band_edge_eV * const.eV` (eV to J) to `V`, then increments `pos` by `dz_nm`.
-    - Creates a step-function potential on an equidistant grid (but note: total grid may not align perfectly across different `layers` calls due to `int` truncation).
-  - **Returns**: Tuple `(np.array(z), np.array(V))` – 1D arrays of same length, suitable for finite-difference methods.
-  - **Potential Issues**: Grid spacing is fixed per call; for multi-structure comparisons (e.g., Task 3), grids may misalign unless `dz_nm` is chosen carefully.
-  - **Documentation Reference**: Relies on SciPy `const.eV` for unit conversion (see above). No external function calls beyond built-ins (`int`, `append`, `range` – Python stdlib docs: [docs.python.org/3/library/functions.html](https://docs.python.org/3/library/functions.html)).
+This document provides a comprehensive explanation of the variables, functions, and scientific principles behind the numerical solution of a finite quantum well as implemented in Task 1.
 
 ---
 
-## Cell 4: Markdown - Task 1: Finite Quantum Well
-- **Type**: Markdown.
-- **Content**:
-  - Subtasks (a), (b), (c):
-    - (a): Use `build_potential` for a 3 nm well, 1 eV offset.
-    - (b): Implement `solve_schrodinger(z, V, n_eigs)`: Finite-difference Hamiltonian, electron mass `m_e`, return `n_eigs` energies (eV) and normalized wavefunctions (∫|ψ|² dx = 1). Boundary: ψ=0 at edges. Tip: Choose barrier thickness to avoid artifacts.
-    - (c): Plot |ψ|² for first 3 states, compare energies to analytical (infinite well?). Suggest scaling ψ for plotting; use labels/legend.
-- **Purpose**: Assignment instructions. References analytical finite well solutions implicitly (standard quantum mechanics texts, e.g., Griffiths' *Introduction to Quantum Mechanics* for transcendental equations).
+### Library Imports
+
+The script begins by importing necessary libraries.
+
+* `numpy`: A fundamental package for scientific computing in Python. It's used here for creating and manipulating numerical arrays (`np.array`, `np.ones`, etc.), performing mathematical operations, and sorting.
+* `matplotlib.pyplot`: A plotting library used to create visualizations of the potential well, energy levels, and wavefunctions.
+* `scipy.constants`: A sub-module of the SciPy library that provides a comprehensive set of physical constants (e.g., `hbar`, electron mass `m_e`, `eV`). This ensures accuracy and avoids manual entry of these values.
+* `scipy.sparse` and `scipy.sparse.linalg`: These modules are used to handle large, sparse matrices efficiently. A sparse matrix is one that is mostly filled with zeros. The Hamiltonian matrix we construct is tridiagonal, making it very sparse. Using sparse matrix tools saves significant memory and computational time compared to using dense NumPy arrays for the same problem.
 
 ---
 
-## Cell 5: Code - Template for `solve_schrodinger`
-- **Type**: Code.
-- **Execution Count**: `null`.
-- **Source Code**:
-  ```python
-  def solve_schrodinger(x, V, n_eigs=5):
-      #Do some calculations
-      
-      return # put return values here
-  ```
+### Function: `build_potential`
 
-### Breakdown
-- **Function: `solve_schrodinger(x, V, n_eigs=5)`**:
-  - **Parameters**:
-    - `x`: Likely position grid (array, e.g., from `build_potential`; note: docstring in Task says `z`, possible typo).
-    - `V`: Potential array (in J, matching `x` length).
-    - `n_eigs=5`: Number of lowest eigenvalues/wavefunctions to compute (int).
-  - **Body**: Placeholder comment `#Do some calculations` and incomplete `return`.
-  - **Expected Behavior** (per instructions): Build tridiagonal Hamiltonian matrix via finite differences (second derivative approximation). Use `const.m_e` for kinetic term. Solve via eigendecomposition (likely `scipy.linalg.eigh` for Hermitian matrix). Convert energies to eV (`/ const.e`). Normalize ψ via trapezoidal integration (∫|ψ|² dx ≈ sum(|ψ|² Δx) = 1). Boundary: Set ψ[0]=ψ[-1]=0, solve on interior points.
-  - **Documentation Reference**: Would use SciPy linear algebra (e.g., `scipy.linalg.eigh` for symmetric matrices; docs: [docs.scipy.org/doc/scipy/reference/linalg.html](https://docs.scipy.org/doc/scipy/reference/linalg.html)). NumPy for arrays. Physical: `const.hbar`, `const.m_e`, `const.e` (SciPy constants).
+This function constructs the one-dimensional potential energy profile $V(z)$.
 
----
+#### **Purpose**
+To translate a high-level description of a semiconductor heterostructure—a series of layers with specified thicknesses and potential energies—into a discretized numerical array that can be used in the Schrödinger solver.
 
-## Cell 6: Markdown - Task 2: Coupled Quantum Wells
-- **Type**: Markdown.
-- **Content**:
-  - Subtasks (a), (b), (c):
-    - (a): Build/solve double well (same well widths); experiment to see subband splitting.
-    - (b): Plot lowest 2 ψ; explain symmetric/antisymmetric.
-    - (c): Plot splitting (ΔE between lowest 2 states) vs. barrier width.
-- **Purpose**: Builds on Task 1 for tunneling effects. References quantum tunneling concepts (e.g., symmetric/antisymmetric via parity in coupled systems).
+#### **Variables**
+* **`layers`** (input): A Python `list` of `tuples`. Each tuple `(thickness_nm, band_edge_eV)` defines a single material layer.
+    * `thickness_nm` (`float`): The physical thickness of the layer in nanometers.
+    * `band_edge_eV` (`float`): The potential energy of that layer in electron-volts (eV).
+* **`dz_nm`** (input): A `float` representing the grid spacing in nanometers. This determines the resolution of our simulation. A smaller `dz_nm` leads to a more accurate result at the cost of increased computation time.
+* **`z`** (local list, returned as `np.array`): Stores the spatial coordinates of each grid point in **meters**.
+* **`V`** (local list, returned as `np.array`): Stores the potential energy values at each grid point in **Joules**. The conversion from eV to Joules is essential for consistency with the SI units used in `scipy.constants`.
+* **`pos`** (local `float`): A counter that keeps track of the current position along the z-axis as the structure is being built.
+* **`n_points`** (local `int`): The number of discrete grid points that fit within a given layer's thickness.
+
+#### **Mechanism**
+The function iterates through each layer defined in the `layers` list. For each layer, it calculates how many grid points (`n_points`) are needed to represent it based on its thickness and the grid spacing `dz_nm`. It then loops `n_points` times, each time appending the current spatial position to the `z` list and the layer's potential energy to the `V` list. The position `pos` is incremented by `dz_nm` in each step. Finally, the Python lists are converted to more efficient NumPy arrays before being returned.
 
 ---
 
-## Cell 7: Code - Empty for Task 2
-- **Type**: Code.
-- **Execution Count**: `null`.
-- **Source**: Empty (`[]`).
-- **Purpose**: Placeholder for student code (e.g., calling `build_potential`, `solve_schrodinger`, plotting with `plt`).
+### Function: `solve_schrodinger`
+
+This is the core of the exercise. It solves the 1D time-independent Schrödinger equation for a given potential `V(z)`.
+
+[cite_start]$$-\frac{\hbar^2}{2m^*} \frac{\partial^2}{\partial z^2}\psi(z) + V(z)\psi(z) = E\psi(z) \quad [cite: 992]$$
+
+This is an eigenvalue equation of the form $\hat{H}\psi = E\psi$, where $\hat{H}$ is the Hamiltonian operator. The goal is to find the allowed energies $E$ (eigenvalues) and their corresponding wavefunctions $\psi$ (eigenvectors).
+
+#### **Mechanism: Finite Difference Method**
+To solve this equation numerically, we discretize both space and the operators. The continuous function $\psi(z)$ becomes a vector `ψ[i]`, where `i` is the index of a grid point. [cite_start]The second derivative is approximated using a central finite difference formula[cite: 1017]:
+
+$$\frac{\partial^2 \psi}{\partial z^2} \approx \frac{\psi(z+dz) - 2\psi(z) + \psi(z-dz)}{dz^2} \rightarrow \frac{\psi[i+1] - 2\psi[i] + \psi[i-1]}{dz^2}$$
+
+[cite_start]Substituting this into the Schrödinger equation yields a system of linear equations that can be written as a single matrix eigenvalue problem[cite: 1059, 1088].
+
+#### **Variables**
+* **`z`, `V`** (input): The NumPy arrays for position (m) and potential (J) generated by `build_potential`.
+* **`n_eigs`** (input): An `int` specifying how many of the lowest energy solutions to find.
+* **`dz`**: The grid spacing in meters, calculated from the input `z` array.
+* **`N`**: The total number of grid points in the simulation domain.
+* **`T_const`**: A `float` constant that combines all the physical constants for the kinetic energy term: $-\frac{\hbar^2}{2m_e}$.
+* **`T`** (`scipy.sparse.csc_matrix`): The **kinetic energy operator matrix**. It's a tridiagonal matrix where the main diagonal is `-2`, the diagonals above and below are `1`, and all other elements are zero. This structure comes directly from the finite difference formula for the second derivative. The entire matrix is then scaled by `T_const / dz**2`.
+* **`U`** (`scipy.sparse.csc_matrix`): The **potential energy operator matrix**. In this basis, it's a simple diagonal matrix where the diagonal entries are the values from the input potential array `V`.
+* **`H`** (`scipy.sparse.csc_matrix`): The **Hamiltonian matrix**, formed by adding the kinetic and potential matrices: `H = T + U`.
+* **`eigenvalues`, `eigenvectors`**: The raw output from the `eigs` solver. Eigenvalues correspond to energies (in Joules), and eigenvectors are the (unnormalized) wavefunctions.
+* **`energies`** (`np.array`): The final, sorted array of eigenenergies, converted to **eV**.
+* **`wavefunctions`** (`np.array`): The final, sorted, and **normalized** wavefunctions.
+
+#### **Execution Flow**
+1.  **Construct Hamiltonian**: It builds the sparse matrices `T` and `U` as described above and sums them to get `H`.
+2.  **Solve Eigenproblem**: It calls `scipy.sparse.linalg.eigs(H, k=n_eigs, which='SM')`. The argument `which='SM'` is crucial; it tells the solver to find the `k` eigenvalues with the **S**mallest **M**agnitude, which correspond to the lowest energy bound states.
+3.  **Sort Results**: The solver doesn't guarantee the order of the results, so the code explicitly sorts the eigenvalues in ascending order and rearranges the eigenvectors to match.
+4.  [cite_start]**Normalize Wavefunctions**: A physical wavefunction must be normalized such that the total probability of finding the particle is 1. The condition is $\int_{-\infty}^{\infty} |\psi(z)|^2 dz = 1$[cite: 800]. The discrete version is $\sum_i |\psi_i|^2 dz = 1$. The code enforces this by calculating the normalization constant for each wavefunction (`np.sqrt(np.sum(psi**2) * dz)`) and dividing the wavefunction by it.
+5.  **Return Values**: The function returns the clean, sorted, and correctly unit-converted energies and wavefunctions.
 
 ---
 
-## Cell 8: Markdown - Task 3: Coupled States Using Perturbation Theory
-- **Type**: Markdown.
-- **Content**:
-  - **Goal**: Use unperturbed (uncoupled) wells' ground states to approximate coupled states via 2x2 Hamiltonian in subspace: Ψ_coupled = c_L ψ_L + c_R ψ_R. Solve H_per c = E S c (generalized eigenproblem, S=overlap matrix).
-  - Given `layers_left`, `layers_right`, `layers_coupled` (tuples: nm, eV).
-  - **Steps**: 1-9 detailed (build potentials, solve uncoupled/coupled, compute H_per/S, solve eigensystem, reconstruct ψ, plot comparisons, extend Task 2(c) with perturbation).
-  - References LaTeX equations for wavefunction and eigenproblem.
-- **Purpose**: Introduces non-orthogonal basis perturbation theory. References quantum perturbation theory (e.g., time-independent, degenerate case for near-degenerate states).
+### Main Script for Task 1
 
----
+This part of the code uses the functions above to perform the specific simulation requested.
 
-## Cell 9: Code - Layer Definitions for Task 3
-- **Type**: Code (ID: "9da3be02").
-- **Execution Count**: `null`.
-- **Source Code**:
-  ```python
-  # Define layer structures
-  layers_left    = [(5.0, 0.0), (2.0, -0.5), (7.3, 0.0)]
-  layers_right   = [(7.3, 0.0), (2.0, -0.5), (5.0, 0.0)]
-  layers_coupled = [(5.0, 0.0), (2.0, -0.5), (0.3, 0.0), (2.0, -0.5), (5.0, 0.0)]
+#### **(a) Build Potential**
+* **`well_width_nm`, `barrier_width_nm`, `barrier_height_eV`**: These variables define the physical parameters of our specific quantum well: a 3 nm well surrounded by 10 nm barriers that are 1 eV high.
+* **`layers_task1`**: This list organizes the parameters into the format required by the `build_potential` function.
+* **`z, V = build_potential(...)`**: This line calls the function to generate the discrete potential profile.
+* **`plt.plot(...)`**: This section plots the potential $V(z)$ to visually confirm that the structure was built correctly.
 
-  dz_nm = 0.01
-  ```
-
-### Breakdown
-- **Variables** (all global in this cell):
-  - `layers_left`: List of 3 tuples – left barrier (5 nm, 0 eV), well (2 nm, -0.5 eV), right barrier (7.3 nm, 0 eV). Asymmetric to isolate left well.
-  - `layers_right`: List of 3 tuples – left barrier (7.3 nm, 0 eV), well (2 nm, -0.5 eV), right barrier (5 nm, 0 eV). Mirror of left for right well isolation.
-  - `layers_coupled`: List of 5 tuples – outer left barrier (5 nm, 0), left well (2 nm, -0.5), thin central barrier (0.3 nm, 0), right well (2 nm, -0.5), outer right barrier (5 nm, 0).
-  - `dz_nm = 0.01`: Float, finer grid spacing (nm) for Task 3 to align grids across structures (addresses step 1 note on equidistant grids).
-- **Comments**: `# Define layer structures` – descriptive header.
-- **Purpose**: Predefines inputs for perturbation calculation. Note: Barrier thicknesses (5+7.3=12.3 nm total per side) ensure ψ≈0 at edges; central 0.3 nm for strong coupling.
-- **Documentation Reference**: Tuples are Python built-ins (immutable lists; stdlib docs: [docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences](https://docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences)). Used as input to `build_potential`.
-
----
-
-This document covers the entire notebook structure. The notebook emphasizes building from simple (single well) to advanced (perturbation) concepts, with code templates for implementation. For execution, cells would run sequentially in a Jupyter environment, building on prior definitions.
-```
+#### **(b) & (c) Solve and Analyze**
+* **`energies, wavefunctions = solve_schrodinger(...)`**: This calls the solver to calculate the first 3 energy states (`n_eigs=3`).
+* **Plotting Results**:
+    * The potential is plotted again as a black line (`'k-'`).
+    * The code then loops through the first three solutions.
+    * For each solution, it plots the **probability density** $|\psi|^2$, not the wavefunction $\psi$ itself, as this density represents the probability of finding the particle at a given position.
+    * The probability density is scaled by a factor `scaling` and shifted vertically by its corresponding energy `energies[i]` so that it appears centered on its energy level in the plot, which is a common and clear way to visualize quantum states.
+    * A dashed horizontal line (`axhline`) is drawn at each energy level to guide the eye.
+* **Analytical Comparison**:
+    * This section serves as a sanity check for the numerical results.
+    * [cite_start]It calculates the energy levels for a related but simpler problem: the **infinite potential well**, for which an exact analytical formula exists: $E_n = \frac{\hbar^2\pi^2 n^2}{2mL^2}$[cite: 803].
+    * By comparing the numerical results of our *finite* well to the analytical results of an *infinite* well, we can check if they are reasonable. As observed, the finite well energies are lower, which is physically correct because the wavefunctions can penetrate the barriers, effectively widening the box.
